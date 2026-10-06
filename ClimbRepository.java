@@ -1,6 +1,6 @@
 import java.util.List;
 
-interface ClimbRepository{
+public interface ClimbRepository{
 
     void saveSession(Session sesh);
 

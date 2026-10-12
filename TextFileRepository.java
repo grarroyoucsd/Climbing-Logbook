@@ -101,4 +101,12 @@ public class TextFileRepository implements ClimbRepository{
 
         return new ArrayList<Session>(map.values());
     }
+
+    public void deleteAllData(){
+        try{
+            Files.deleteIfExists(file);
+        }catch(IOException e){
+            throw new StorageException("Could not delete data", e);
+        }
+    }
 }

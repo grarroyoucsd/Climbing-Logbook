@@ -1,0 +1,1 @@
+public record GradeSends(int grade, int sends, int attempts){}

@@ -37,6 +37,13 @@ public class InputReader{
         }
     }
 
+    public GradeRange readRange(String prompt, int min, int max, int maxSpan){
+        System.out.println(prompt);
+        int resMin = readInt("Enter lower bound: ", min, max);
+        int resMax = readInt("Enter Upper bound: ", resMin, Math.min(max, resMin + maxSpan));
+        return new GradeRange(resMin, resMax);
+    }
+
     public boolean readYesNo(String prompt){
         while(true){
             System.out.print(prompt);

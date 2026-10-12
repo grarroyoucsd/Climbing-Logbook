@@ -1,16 +1,18 @@
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Collections;
-
 import java.util.ArrayList;
+
 
 public class ConsoleUI{
     private final InputReader input;
     private final ClimbRepository repo;
+    private final ConsolePrinter printer;
 
-    public ConsoleUI(InputReader input, ClimbRepository repo){
+    public ConsoleUI(InputReader input, ClimbRepository repo, ConsolePrinter printer){
         this.input = input;
         this.repo = repo;
+        this.printer = printer;
     }
 
     public Session readSession(){
@@ -37,84 +39,17 @@ public class ConsoleUI{
         return sesh;
     }
 
-    public void printSession(Session sesh){
-        if(sesh.getTotalClimbs() == 0){
-            System.out.println("No climbs were entered");
-            return;
-        }
-
-        System.out.println(sesh.getDate());
-
-        List<Climb> climbs = sesh.getClimbs();
-
-        int num = 0;
-        for (Climb c : climbs){
-            System.out.println("\n" + (++num) + ".");
-            System.out.println(c);
-        }
-
-        System.out.println();
-        System.out.println("Climbs: " + sesh.getTotalClimbs());
-        System.out.println("Sent: " + sesh.getSentCount());
-        System.out.println("Flashes: " + sesh.getFlashCount());
-        System.out.println();
-    }
-
-    public void printHistory(List<Session> seshList){
-
-        for (int i = 0; i < seshList.size(); ++i){
-            Session sesh = seshList.get(i);
-            int hardestGrade = sesh.getHardestGrade();
-            String hardest = (hardestGrade == -1) ? "-" : "V" + hardestGrade; 
-            System.out.printf("%d %s %2d climbs %2d sent %2d flashes  hardest %s%n", 
-                i + 1, sesh.getDate(), sesh.getTotalClimbs(), sesh.getSentCount(), sesh.getFlashCount(), hardest);
-        }
-    }
-
-    public void printStats(StatsService stats){
-        if(stats.getTotalClimbs() == 0){
-            System.out.println("No climbing data yet");
-            return;
-        }
-
-        System.out.println("Sessions: " + stats.getTotalSessions());
-        System.out.println("Climbs: " + stats.getTotalClimbs());
-        System.out.println("Sends: " + stats.getTotalSends());
-        System.out.println("Flashes: " + stats.getTotalFlashes());
-        System.out.printf("Send Rate: %.1f%%%n", stats.getSendRate() * 100);
-        System.out.printf("Flash Rate: %.1f%%%n", stats.getFlashRate() * 100);
-        System.out.printf("Avg Att per Climb: %.1f%n", stats.getAvgAttemptsClimb());
-        if(stats.getTotalSends() == 0){
-            System.out.println("Avg Grade Sent: -");
-            System.out.println("Hardest Grade Sent: -");
-        }else{
-            System.out.printf("Avg Grade Sent: V%.1f%n", stats.getAverageGradeSent());
-            System.out.println("Hardest Grade Sent: V" + stats.getHardestGrade());
-        }
-
-        System.out.println("\nGrade Breakdown");
-
-        int[] climbs = stats.getClimbsByGrade();
-        int[] sends = stats.getSendsByGrade();
-        double[] sendRates = stats.getSendRateByGrade();
-
-        for (int i = Climb.MIN_GRADE; i <= Climb.MAX_GRADE; ++i){
-            if(climbs[i] > 0){
-                System.out.printf("V%-3d Attempted: %3d Sent: %3d %5.1f%%%n", i, climbs[i], sends[i], sendRates[i] * 100);
-            }
-        }
-    }
-
     public void run(){
         while(true){
             System.out.println("1. Log Session");
             System.out.println("2. View History");
             System.out.println("3. View Stats");
-            System.out.println("4. Quit");
-            System.out.println("");
+            System.out.println("4. Delete Data");
+            System.out.println("5. Quit");
+            System.out.println();
 
-            int num = input.readInt("Enter number (1-4) to choose an option: ", 1, 4);
-            System.out.println("");
+            int num = input.readInt("Enter number (1-5) to choose an option: ", 1, 5);
+            System.out.println();
 
             try{
                 if(num == 1){
@@ -124,19 +59,21 @@ public class ConsoleUI{
                 } else if(num == 3){
                     handleStats();
                 } else if(num == 4){
+                    handleDeletion();
+                }else if(num == 5){
                     break;
                 }
             } catch(StorageException e){
                 System.out.println("Error: " + e.getMessage());
             }
 
-            System.out.println("");
+            System.out.println();
         }
     }
 
     public void handleLogSession(){
         Session sesh = readSession();
-        printSession(sesh);
+        printer.printSession(sesh);
 
         if(sesh.getTotalClimbs() != 0){
             boolean confirm = input.readYesNo("Do you want to save session (yes/no)? ");
@@ -150,19 +87,19 @@ public class ConsoleUI{
     public void handleHistory(){
         List<Session> seshList = repo.loadAllSessions();
 
-        List<Session> display = new ArrayList<>(seshList);
-        Collections.reverse(display);
-
-        if(display.size() == 0){
+        if(seshList.size() == 0){
             System.out.println("No climbing data yet");
         }else{
-            printHistory(display);
-            System.out.println("");
+            List<Session> display = new ArrayList<>(seshList);
+            Collections.reverse(display);
+
+            printer.printHistory(display);
+            System.out.println();
 
             boolean more = input.readYesNo("Do you want to view a session in detail (yes/no)? ");
             while(more){
                 int seshNum = input.readInt("Enter number of session: ", 1, display.size());
-                printSession(display.get(seshNum - 1));
+                printer.printSession(display.get(seshNum - 1));
 
                 more = input.readYesNo("Do you want to view another session (yes/no)? ");
             }
@@ -173,6 +110,51 @@ public class ConsoleUI{
         List<Session> seshList = repo.loadAllSessions();
         StatsService stats = new StatsService(seshList);
 
-        printStats(stats);
+        if(seshList.size() == 0){
+            System.out.println("No climbing data yet");
+            return;
+        }
+
+        System.out.println("1. Overview");
+        System.out.println("2. Monthly Progress");
+        System.out.println("3. Highlights");
+        System.out.println();
+
+        int num = input.readInt("Enter number (1-3) to choose an option: ", 1, 3);
+        System.out.println("");
+
+        if(num == 1){
+            printer.printOverview(stats);
+        }else if(num == 2){
+            handleMonthly(stats);
+        }else if(num == 3){
+            printer.printHighlights(stats);
+        }
+    }
+
+    public void handleMonthly(StatsService stats){
+        printer.printMonthlyOverview(stats);
+        System.out.println();
+
+        if(input.readYesNo("Would you like to look at monthly send rates (yes/no)? ")){
+            System.out.println();
+            GradeRange range = input.readRange("What range of grades would you like to look over (MAX of 5 grades)? ", 
+                Climb.MIN_GRADE, Climb.MAX_GRADE, + 5);
+            
+            printer.printMonthlyRates(stats, range);
+        }
+    }
+
+    public void handleDeletion(){
+        if (input.readYesNo("Are you sure you want to delete your data (yes/no)? ")){
+            String delete = input.readString("Enter 'DELETE' to delete data: ");
+            if (delete.equals("DELETE")){
+                repo.deleteAllData();
+                System.out.println("Data deleted successfully");
+                return;
+            }
+        }
+
+        System.out.println("Data was not deleted");
     }
 }

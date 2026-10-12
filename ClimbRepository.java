@@ -6,4 +6,5 @@ public interface ClimbRepository{
 
     List<Session> loadAllSessions();
 
+    void deleteAllData();
 }

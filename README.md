@@ -5,8 +5,7 @@ A command-line logbook for bouldering. Log your sessions (each climb's grade, at
 ## Features
 
 - **Log a session** with validated input: V-grade (0-17), attempts (1-99), and sent / not sent. A send on the first attempt is a flash.
-- **View history**, newest first, with a one-line summary per session and full detail on request.
-  - You may request to see a specific session in detail.
+- **View history**, newest first, with a one-line summary per session and full detail of a specific session on request.
 - **View stats**
   - *Overview:* totals, send and flash rates, average attempts, and send rate by grade
   - *Monthly progress:* sessions per month, your hardest grades each month with send counts and attempts, and send rate by grade over time for a range of grades you choose

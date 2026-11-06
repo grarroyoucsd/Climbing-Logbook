@@ -91,12 +91,39 @@ Storage sits behind the `ClimbRepository` interface, with two implementations. S
 - **Best session uses exponential scoring.** Each send is worth 2^grade points, so two V8s beat three V7s, and warm-ups barely count. The base is a constant in `StatsService`.
 - **Parameterized queries throughout.** All user text goes into SQL through placeholders, never string concatenation.
 
+## Running the tests
+
+The tests use JUnit and need Java 17 or newer.
+
+**One-time setup.** From the project root, download the JUnit console runner into `lib/`. (The SQLite and SLF4J jars from the main setup are also needed, since the repository tests use the database.)
+
+```
+cd lib
+curl -O https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/6.1.2/junit-platform-console-standalone-6.1.2.jar
+cd ..
+```
+
+**Compile and run** (from the project root):
+
+```
+javac -cp "lib/*" -d out *.java test/*.java
+java -cp "out:lib/*" org.junit.platform.console.ConsoleLauncher execute --scan-class-path out
+```
+
+**What's covered**
+
+- `Climb`: input validation, including the limits of each field, and flash logic
+- `Session`: counts, rejected null input, and a read-only climb list
+- `StatsService`: totals, rates, averages, highlights, and monthly statistics, using hand-calculated data
+- `SqliteRepository`: saving and loading sessions (a full round trip), ordering, separate sessions on the same date, resetting the database, and persistence between runs
+
+Repository tests use temporary files, so they never touch your real data. The console UI (`ConsoleUI`, `ConsolePrinter`) is checked manually.
+
 ## Known limitations
 
 - Climbs aren't linked across sessions, so a project worked over several days shows up as separate entries, and "longest project" means the most attempts in a single entry.
 - No editing or deleting of individual sessions (only deleting everything).
 - V-scale grades only.
-- Testing has been manual: there is no automated test suite yet.
 
 ## Ideas for later
 

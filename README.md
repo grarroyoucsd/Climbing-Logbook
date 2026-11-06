@@ -53,10 +53,10 @@ curl -o lib/sqlite-jdbc-3.46.1.0.jar https://repo1.maven.org/maven2/org/xerial/s
 curl -o lib/slf4j-api-1.7.36.jar https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar
 
 # 2. Compile
-javac -cp "lib/*" *.java
+javac -cp "lib/*" -d out *.java
 
 # 3. Run
-java --enable-native-access=ALL-UNNAMED -cp ".:lib/*" Main
+java --enable-native-access=ALL-UNNAMED -cp "out:lib/*" Main
 ```
 
 The database file `climbing.db` is created in the project folder on first run.

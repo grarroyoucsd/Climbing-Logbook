@@ -194,7 +194,7 @@ public class StatsService{
         return (longest == null) ? null : new DatedClimb(date, longest);
     }
 
-    public int getSessionPts(Session sesh){
+    private int getSessionPts(Session sesh){
         int pts = 0;
         for (Climb c : sesh.getClimbs()){
             if (c.isSent()){

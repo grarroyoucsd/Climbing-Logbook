@@ -146,8 +146,8 @@ public class SqliteRepository implements ClimbRepository{
                     st.execute("DROP TABLE IF EXISTS climbs");
                     st.execute("DROP TABLE IF EXISTS sessions");
                 }
-                conn.commit();
                 createTables(conn);
+                conn.commit();
             }catch(SQLException e){
                 conn.rollback();
                 throw e;

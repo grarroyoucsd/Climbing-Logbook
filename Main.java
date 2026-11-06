@@ -1,4 +1,4 @@
-//javac -cp "lib/*" *.java
+//javac -cp "lib/*" -d out *.java
 //java --enable-native-access=ALL-UNNAMED -cp ".:lib/*" Main
 
 import java.util.Scanner;
